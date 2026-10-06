@@ -1,6 +1,7 @@
 package ro.uvt.sp.lab1;
 
 import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -10,10 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SpLabPatrickSulyokApplicationTests {
 
     @Test
-    void mainPrintsTheExactProfessorExampleWithoutStartingSpring() {
+    void mainPrintsStrategyExampleWithoutStartingSpring() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream original = System.out;
-        try (PrintStream capture = new PrintStream(output, true, StandardCharsets.UTF_8)) {
+
+        try (PrintStream capture =
+                     new PrintStream(output, true, StandardCharsets.UTF_8)) {
             System.setOut(capture);
             SpLabPatrickSulyokApplication.main(new String[0]);
         } finally {
@@ -21,22 +24,26 @@ class SpLabPatrickSulyokApplicationTests {
         }
 
         String expected = """
-                Book: Noapte buna, copii!
+                Printing without Alignment
 
-                Authors:
-                Author: Radu Pavel Gheo
-
-                Paragraph: Multumesc celor care ...
                 Capitolul 1
-                Paragraph: Moto capitol
-                Capitolul 1.1
-                Paragraph: Text from subchapter 1.1
-                Capitolul 1.1.1
-                Paragraph: Text from subchapter 1.1.1
-                Subchapter 1.1.1.1
-                Image with name:Image subchapter 1.1.1.1
-                """;
-        assertEquals(expected, output.toString(StandardCharsets.UTF_8).replace("\r\n", "\n"));
-    }
+                Paragraph: Paragraph 1
+                Paragraph: Paragraph 2
+                Paragraph: Paragraph 3
+                Paragraph: Paragraph 4
 
+                Printing with Alignment
+
+                Capitolul 1
+                Paragraph: Paragraph 1 (Aligned Center)
+                Paragraph: Paragraph 2 (Aligned Right)
+                Paragraph: Paragraph 3 (Aligned Left)
+                Paragraph: Paragraph 4
+                """;
+
+        assertEquals(
+                expected,
+                output.toString(StandardCharsets.UTF_8).replace("\r\n", "\n")
+        );
+    }
 }
