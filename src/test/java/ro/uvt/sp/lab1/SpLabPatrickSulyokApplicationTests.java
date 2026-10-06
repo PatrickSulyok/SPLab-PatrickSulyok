@@ -6,44 +6,32 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SpLabPatrickSulyokApplicationTests {
 
     @Test
-    void mainPrintsStrategyExampleWithoutStartingSpring() {
+    void mainExecutesProxyExample() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream original = System.out;
 
         try (PrintStream capture =
                      new PrintStream(output, true, StandardCharsets.UTF_8)) {
+
             System.setOut(capture);
             SpLabPatrickSulyokApplication.main(new String[0]);
+
         } finally {
             System.setOut(original);
         }
 
-        String expected = """
-                Printing without Alignment
+        String result = output.toString(StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
 
-                Capitolul 1
-                Paragraph: Paragraph 1
-                Paragraph: Paragraph 2
-                Paragraph: Paragraph 3
-                Paragraph: Paragraph 4
-
-                Printing with Alignment
-
-                Capitolul 1
-                Paragraph: Paragraph 1 (Aligned Center)
-                Paragraph: Paragraph 2 (Aligned Right)
-                Paragraph: Paragraph 3 (Aligned Left)
-                Paragraph: Paragraph 4
-                """;
-
-        assertEquals(
-                expected,
-                output.toString(StandardCharsets.UTF_8).replace("\r\n", "\n")
-        );
+        assertTrue(result.contains("Creation of the content took"));
+        assertTrue(result.contains("Front Cover"));
+        assertTrue(result.contains("Image with name:Pamela Anderson"));
+        assertTrue(result.contains("Printing of the section 1 took"));
+        assertTrue(result.contains("Printing again the section 1 took"));
     }
 }
