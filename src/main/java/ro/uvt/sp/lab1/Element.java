@@ -1,6 +1,5 @@
 package ro.uvt.sp.lab1;
 
-/** Common component in the book's Composite structure. */
 public abstract class Element {
     private Section parent;
 
@@ -8,12 +7,13 @@ public abstract class Element {
         return parent;
     }
 
-    // Ownership is changed only by Section.add/remove, not by callers.
     final void setParent(Section parent) {
         this.parent = parent;
     }
 
-    public abstract void print();
+    public abstract void render();
+
+    public abstract void accept(Visitor visitor);
 
     public void add(Element element) {
         throw new UnsupportedOperationException("A leaf element cannot contain children.");

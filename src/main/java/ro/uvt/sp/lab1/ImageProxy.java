@@ -11,11 +11,16 @@ public class ImageProxy extends Element {
     }
 
     @Override
-    public void print() {
+    public void render() {
         if (realImage == null) {
             realImage = new Image(url);
         }
 
-        realImage.print();
+        realImage.render();
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }

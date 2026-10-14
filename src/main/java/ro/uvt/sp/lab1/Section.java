@@ -19,21 +19,23 @@ public class Section extends Element {
     @Override
     public void add(Element element) {
         Objects.requireNonNull(element, "element");
+
         for (Section ancestor = this; ancestor != null; ancestor = ancestor.getParent()) {
             if (ancestor == element) {
                 throw new IllegalArgumentException("Adding this element would create a cycle.");
             }
         }
+
         if (element.getParent() != null) {
             throw new IllegalStateException("Element already belongs to a section or book.");
         }
+
         children.add(element);
         element.setParent(this);
     }
 
     @Override
     public void remove(Element element) {
-        // Compare by identity so only the actual owned instance is detached.
         for (int index = 0; index < children.size(); index++) {
             if (children.get(index) == element) {
                 children.remove(index);
@@ -49,14 +51,19 @@ public class Section extends Element {
     }
 
     @Override
-    public void print() {
-        printTitle();
-        for (Element child : children) {
-            child.print();
-        }
+    public void render() {
+        System.out.println(title);
     }
 
-    protected void printTitle() {
-        System.out.println(title);
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+        acceptChildren(visitor);
+    }
+
+    protected void acceptChildren(Visitor visitor) {
+        for (Element child : children) {
+            child.accept(visitor);
+        }
     }
 }
