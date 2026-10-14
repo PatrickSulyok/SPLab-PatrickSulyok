@@ -12,12 +12,17 @@ public class Image extends Element {
         try {
             TimeUnit.SECONDS.sleep(5);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 
     @Override
-    public void print() {
+    public void render() {
         System.out.println("Image with name:" + url);
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }
