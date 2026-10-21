@@ -1,52 +1,38 @@
+
 package ro.uvt.sp.lab1;
 
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import ro.uvt.sp.lab1.diexamples.ClientComponent;
+import ro.uvt.sp.lab1.diexamples.SingletonComponent;
+import ro.uvt.sp.lab1.diexamples.TransientComponent;
 
 @SpringBootApplication
 public class SpLabPatrickSulyokApplication {
 
     public static void main(String[] args) {
-        Section cap1 = new Section("Capitolul 1");
+        ApplicationContext context =
+                SpringApplication.run(SpLabPatrickSulyokApplication.class, args);
 
-        Paragraph p1 = new Paragraph("Paragraph 1");
-        cap1.add(p1);
+        TransientComponent transientBean =
+                context.getBean(TransientComponent.class);
+        transientBean.operation();
 
-        Paragraph p2 = new Paragraph("Paragraph 2");
-        cap1.add(p2);
+        transientBean = context.getBean(TransientComponent.class);
+        transientBean.operation();
 
-        Paragraph p3 = new Paragraph("Paragraph 3");
-        cap1.add(p3);
+        SingletonComponent singletonBean =
+                context.getBean(SingletonComponent.class);
+        singletonBean.operation();
 
-        Paragraph p4 = new Paragraph("Paragraph 4");
-        cap1.add(p4);
+        singletonBean = context.getBean(SingletonComponent.class);
+        singletonBean.operation();
 
-        cap1.add(new ImageProxy("ImageOne"));
-        cap1.add(new Image("ImageTwo"));
-        cap1.add(new Paragraph("Some text"));
-        cap1.add(new Table("Table 1"));
+        ClientComponent client = context.getBean(ClientComponent.class);
+        client.operation();
 
-        BookStatistics stats = new BookStatistics();
-        cap1.accept(stats);
-        stats.printStatistics();
-
-        System.out.println();
-        System.out.println("Rendering content:");
-        cap1.accept(new RenderContentVisitor());
-
-        Section cap11 = new Section("Capitolul 1.1");
-        cap1.add(cap11);
-
-        cap11.add(new Paragraph("Text din subcapitolul 1.1"));
-
-        Section cap111 = new Section("Capitolul 1.1.1");
-        cap11.add(cap111);
-
-        cap111.add(new Paragraph("Text din subcapitolul 1.1.1"));
-
-        GenerateToC toc = new GenerateToC();
-        cap1.accept(toc);
-
-        System.out.println();
-        System.out.println(toc.getToC());
+        client = (ClientComponent) context.getBean("clientComponent");
+        client.operation();
     }
 }
