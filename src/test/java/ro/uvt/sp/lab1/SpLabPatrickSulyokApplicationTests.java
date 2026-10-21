@@ -19,7 +19,7 @@ class SpLabPatrickSulyokApplicationTests {
         try (PrintStream capture =
                      new PrintStream(output, true, StandardCharsets.UTF_8)) {
             System.setOut(capture);
-            SpLabPatrickSulyokApplication.main(new String[0]);
+            VisitorDemo.main(new String[0]);
         } finally {
             System.setOut(original);
         }
