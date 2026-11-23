@@ -1,9 +1,29 @@
+
 package ro.uvt.sp.lab1;
 
+import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public abstract class Element {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
     private Section parent;
 
-    public final Section getParent() {
+    public Long getId() {
+        return id;
+    }
+
+    @JsonIgnore
+    public Section getParent() {
         return parent;
     }
 

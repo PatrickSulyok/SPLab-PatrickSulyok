@@ -1,10 +1,20 @@
+
 package ro.uvt.sp.lab1;
 
+import jakarta.persistence.*;
 import java.util.Objects;
 
+@Entity
 public class Paragraph extends Element {
-    private final String text;
+
+    @Column(length = 10000)
+    private String text;
+
+    @Transient
     private AlignStrategy alignStrategy;
+
+    protected Paragraph() {
+    }
 
     public Paragraph(String text) {
         this.text = Objects.requireNonNull(text, "text");

@@ -1,22 +1,25 @@
-
 package ro.uvt.sp.lab1.commands;
-
-import ro.uvt.sp.lab1.services.BooksService;
 
 public class UpdateBookCommand implements Command<Boolean> {
 
-    private final BooksService booksService;
+    private final CommandContext context;
     private final Long id;
     private final String title;
 
-    public UpdateBookCommand(BooksService booksService, Long id, String title) {
-        this.booksService = booksService;
+    public UpdateBookCommand(CommandContext context, Long id, String title) {
+        this.context = context;
         this.id = id;
         this.title = title;
     }
 
     @Override
     public Boolean execute() {
-        return booksService.updateBook(id, title);
+        return context.getBooksRepository().findById(id)
+                .map(book -> {
+                    book.setTitle(title);
+                    context.getBooksRepository().save(book);
+                    return true;
+                })
+                .orElse(false);
     }
 }

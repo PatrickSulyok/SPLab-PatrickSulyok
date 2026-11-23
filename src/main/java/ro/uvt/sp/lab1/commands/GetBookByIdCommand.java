@@ -1,20 +1,21 @@
-
 package ro.uvt.sp.lab1.commands;
 
-import ro.uvt.sp.lab1.services.BooksService;
+import ro.uvt.sp.lab1.Book;
 
-public class GetBookByIdCommand implements Command<String> {
+public class GetBookByIdCommand implements Command<Book> {
 
-    private final BooksService booksService;
+    private final CommandContext context;
     private final Long id;
 
-    public GetBookByIdCommand(BooksService booksService, Long id) {
-        this.booksService = booksService;
+    public GetBookByIdCommand(CommandContext context, Long id) {
+        this.context = context;
         this.id = id;
     }
 
     @Override
-    public String execute() {
-        return booksService.getBookById(id);
+    public Book execute() {
+        return context.getBooksRepository()
+                .findById(id)
+                .orElse(null);
     }
 }
