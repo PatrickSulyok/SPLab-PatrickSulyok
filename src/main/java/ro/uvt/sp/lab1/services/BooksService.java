@@ -2,37 +2,62 @@
 package ro.uvt.sp.lab1.services;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ro.uvt.sp.lab1.Book;
+import ro.uvt.sp.lab1.persistence.CrudRepository;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@Transactional
 public class BooksService {
 
-    private final Map<Long, String> books = new ConcurrentHashMap<>();
-    private final AtomicLong nextId = new AtomicLong(1);
+    private final CrudRepository<Book, Long> booksRepository;
 
-    public Map<Long, String> getAllBooks() {
-        return new LinkedHashMap<>(books);
+    public BooksService(CrudRepository<Book, Long> booksRepository) {
+        this.booksRepository = booksRepository;
     }
 
+    @Transactional(readOnly = true)
+    public Map<Long, String> getAllBooks() {
+        Map<Long, String> books = new LinkedHashMap<>();
+
+        for (Book book : booksRepository.findAll()) {
+            books.put(book.getId(), book.getTitle());
+        }
+
+        return books;
+    }
+
+    @Transactional(readOnly = true)
     public String getBookById(Long id) {
-        return books.get(id);
+        return booksRepository.findById(id)
+                .map(Book::getTitle)
+                .orElse(null);
     }
 
     public Long createBook(String title) {
-        Long id = nextId.getAndIncrement();
-        books.put(id, title);
-        return id;
+        Book book = new Book(title);
+        return booksRepository.save(book).getId();
     }
 
     public boolean updateBook(Long id, String title) {
-        return books.replace(id, title) != null;
+        return booksRepository.findById(id)
+                .map(book -> {
+                    book.setTitle(title);
+                    booksRepository.save(book);
+                    return true;
+                })
+                .orElse(false);
     }
 
     public boolean deleteBook(Long id) {
-        return books.remove(id) != null;
+        if (!booksRepository.existsById(id)) {
+            return false;
+        }
+
+        booksRepository.deleteById(id);
+        return true;
     }
 }

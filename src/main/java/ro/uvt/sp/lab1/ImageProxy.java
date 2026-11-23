@@ -1,13 +1,27 @@
+
 package ro.uvt.sp.lab1;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 import java.util.Objects;
 
+@Entity
 public class ImageProxy extends Element {
-    private final String url;
+
+    private String url;
+
+    @Transient
     private Image realImage;
+
+    protected ImageProxy() {
+    }
 
     public ImageProxy(String url) {
         this.url = Objects.requireNonNull(url, "url");
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     @Override

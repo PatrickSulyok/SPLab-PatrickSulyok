@@ -1,20 +1,22 @@
-
 package ro.uvt.sp.lab1.commands;
-
-import ro.uvt.sp.lab1.services.BooksService;
 
 public class DeleteBookCommand implements Command<Boolean> {
 
-    private final BooksService booksService;
+    private final CommandContext context;
     private final Long id;
 
-    public DeleteBookCommand(BooksService booksService, Long id) {
-        this.booksService = booksService;
+    public DeleteBookCommand(CommandContext context, Long id) {
+        this.context = context;
         this.id = id;
     }
 
     @Override
     public Boolean execute() {
-        return booksService.deleteBook(id);
+        if (!context.getBooksRepository().existsById(id)) {
+            return false;
+        }
+
+        context.getBooksRepository().deleteById(id);
+        return true;
     }
 }

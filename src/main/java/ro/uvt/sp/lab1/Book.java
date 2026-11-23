@@ -1,14 +1,32 @@
+
 package ro.uvt.sp.lab1;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Entity
 public class Book extends Section {
-    private final List<Author> authors = new ArrayList<>();
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "book_authors",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id")
+    )
+    @OrderColumn(name = "author_position")
+    private List<Author> authors = new ArrayList<>();
+
+    protected Book() {
+    }
 
     public Book(String title) {
         super(title);
+    }
+
+    public List<Author> getAuthors() {
+        return authors;
     }
 
     public void addAuthor(Author author) {

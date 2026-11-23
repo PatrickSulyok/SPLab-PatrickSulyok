@@ -1,20 +1,18 @@
-
 package ro.uvt.sp.lab1.commands;
 
-import ro.uvt.sp.lab1.services.BooksService;
+import ro.uvt.sp.lab1.Book;
+import java.util.List;
 
-import java.util.Map;
+public class GetAllBooksCommand implements Command<List<Book>> {
 
-public class GetAllBooksCommand implements Command<Map<Long, String>> {
+    private final CommandContext context;
 
-    private final BooksService booksService;
-
-    public GetAllBooksCommand(BooksService booksService) {
-        this.booksService = booksService;
+    public GetAllBooksCommand(CommandContext context) {
+        this.context = context;
     }
 
     @Override
-    public Map<Long, String> execute() {
-        return booksService.getAllBooks();
+    public List<Book> execute() {
+        return context.getBooksRepository().findAll();
     }
 }

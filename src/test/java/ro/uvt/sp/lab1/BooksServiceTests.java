@@ -1,95 +1,111 @@
-
 package ro.uvt.sp.lab1;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import ro.uvt.sp.lab1.commands.*;
-import ro.uvt.sp.lab1.services.BooksService;
+import ro.uvt.sp.lab1.persistence.CrudRepository;
 
-import java.util.Map;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:booktests;DB_CLOSE_DELAY=-1",
+        "spring.jpa.hibernate.ddl-auto=create-drop"
+})
 class BooksServiceTests {
+
+    @Autowired
+    private CrudRepository<Book, Long> repository;
+
+    private CommandContext context;
+
+    @BeforeEach
+    void setUp() {
+        for (Book book : repository.findAll()) {
+            repository.deleteById(book.getId());
+        }
+
+        context = new CommandContext(repository);
+    }
 
     @Test
     void createAndRetrieveBook() {
-        BooksService service = new BooksService();
+        Long id = new CreateBookCommand(context, "Book One").execute();
 
-        Long id = new CreateBookCommand(service, "Book One").execute();
+        Book book = new GetBookByIdCommand(context, id).execute();
 
-        assertEquals("Book One",
-                new GetBookByIdCommand(service, id).execute());
+        assertNotNull(book);
+        assertEquals("Book One", book.getTitle());
     }
 
     @Test
     void retrieveAllBooks() {
-        BooksService service = new BooksService();
+        new CreateBookCommand(context, "First").execute();
+        new CreateBookCommand(context, "Second").execute();
 
-        new CreateBookCommand(service, "First").execute();
-        new CreateBookCommand(service, "Second").execute();
-
-        Map<Long, String> books =
-                new GetAllBooksCommand(service).execute();
+        List<Book> books = new GetAllBooksCommand(context).execute();
 
         assertEquals(2, books.size());
-        assertTrue(books.containsValue("First"));
-        assertTrue(books.containsValue("Second"));
+        assertTrue(books.stream()
+                .anyMatch(book -> book.getTitle().equals("First")));
+        assertTrue(books.stream()
+                .anyMatch(book -> book.getTitle().equals("Second")));
     }
 
     @Test
     void updateExistingBook() {
-        BooksService service = new BooksService();
+        Long id = new CreateBookCommand(context, "Old Title").execute();
 
-        Long id = new CreateBookCommand(service, "Old Title").execute();
+        assertTrue(new UpdateBookCommand(context, id, "New Title").execute());
 
-        assertTrue(new UpdateBookCommand(service, id, "New Title").execute());
-        assertEquals("New Title",
-                new GetBookByIdCommand(service, id).execute());
+        Book book = new GetBookByIdCommand(context, id).execute();
+
+        assertEquals("New Title", book.getTitle());
     }
 
     @Test
     void deleteExistingBook() {
-        BooksService service = new BooksService();
+        Long id = new CreateBookCommand(context, "Temporary").execute();
 
-        Long id = new CreateBookCommand(service, "Temporary").execute();
-
-        assertTrue(new DeleteBookCommand(service, id).execute());
-        assertNull(new GetBookByIdCommand(service, id).execute());
+        assertTrue(new DeleteBookCommand(context, id).execute());
+        assertNull(new GetBookByIdCommand(context, id).execute());
     }
 
     @Test
     void missingBookOperationsFail() {
-        BooksService service = new BooksService();
-
-        assertNull(new GetBookByIdCommand(service, 999L).execute());
-        assertFalse(new UpdateBookCommand(service, 999L, "Title").execute());
-        assertFalse(new DeleteBookCommand(service, 999L).execute());
+        assertNull(new GetBookByIdCommand(context, 999L).execute());
+        assertFalse(new UpdateBookCommand(context, 999L, "Title").execute());
+        assertFalse(new DeleteBookCommand(context, 999L).execute());
     }
 
     @Test
     void synchronousExecutorReturnsResult() {
-        BooksService service = new BooksService();
         CommandExecutor executor = new SynchronousCommandExecutor();
 
         Long id = executor.execute(
-                new CreateBookCommand(service, "Sync Book")
+                new CreateBookCommand(context, "Sync Book")
         ).join();
 
-        assertEquals("Sync Book", service.getBookById(id));
+        assertEquals("Sync Book",
+                new GetBookByIdCommand(context, id).execute().getTitle());
     }
 
     @Test
     void asynchronousExecutorReturnsResult() {
-        BooksService service = new BooksService();
-
         try (AsynchronousCommandExecutor executor =
                      new AsynchronousCommandExecutor()) {
 
             Long id = executor.execute(
-                    new CreateBookCommand(service, "Async Book")
+                    new CreateBookCommand(context, "Async Book")
             ).join();
 
-            assertEquals("Async Book", service.getBookById(id));
+            assertEquals("Async Book",
+                    new GetBookByIdCommand(context, id).execute().getTitle());
         }
     }
 }

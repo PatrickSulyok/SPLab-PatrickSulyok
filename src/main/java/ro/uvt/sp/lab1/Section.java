@@ -1,12 +1,22 @@
+
 package ro.uvt.sp.lab1;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Entity
 public class Section extends Element {
-    private final String title;
-    private final List<Element> children = new ArrayList<>();
+
+    private String title;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OrderColumn(name = "child_position")
+    private List<Element> children = new ArrayList<>();
+
+    protected Section() {
+    }
 
     public Section(String title) {
         this.title = Objects.requireNonNull(title, "title");
@@ -14,6 +24,14 @@ public class Section extends Element {
 
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = Objects.requireNonNull(title, "title");
+    }
+
+    public List<Element> getChildren() {
+        return children;
     }
 
     @Override
