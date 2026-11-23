@@ -1,12 +1,13 @@
+
 package ro.uvt.sp.lab1.controllers;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ro.uvt.sp.lab1.Book;
 import ro.uvt.sp.lab1.commands.*;
 import ro.uvt.sp.lab1.persistence.CrudRepository;
 import ro.uvt.sp.lab1.services.AsyncCommandService;
+import ro.uvt.sp.lab1.observer.AllBooksSubject;
 
 import java.net.URI;
 import java.util.List;
@@ -18,79 +19,84 @@ public class BooksController {
 
     private final CommandContext context;
     private final AsyncCommandService asyncCommandService;
+    private final AllBooksSubject allBooksSubject;
 
     public BooksController(
             CrudRepository<Book, Long> booksRepository,
-            AsyncCommandService asyncCommandService
-    ) {
+            AsyncCommandService asyncCommandService,
+            AllBooksSubject allBooksSubject) {
         this.context = new CommandContext(booksRepository);
         this.asyncCommandService = asyncCommandService;
+        this.allBooksSubject = allBooksSubject;
     }
 
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
-        GetAllBooksCommand command = new GetAllBooksCommand(context);
-        return ResponseEntity.ok(command.execute());
+        return ResponseEntity.ok(
+                new GetAllBooksCommand(context).execute());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
-        GetBookByIdCommand command = new GetBookByIdCommand(context, id);
-        Book book = command.execute();
+        Book book = new GetBookByIdCommand(context, id).execute();
 
-        if (book == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(book);
+        return book == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(book);
     }
 
     @PostMapping
     public ResponseEntity<Long> createBook(@RequestBody String title) {
-        CreateBookCommand command = new CreateBookCommand(context, title);
-        Long id = command.execute();
+        Long id = new CreateBookCommand(context, title).execute();
 
-        return ResponseEntity.created(URI.create("/books/" + id)).body(id);
+        context.getBooksRepository()
+                .findById(id)
+                .ifPresent(allBooksSubject::add);
+
+        return ResponseEntity.created(
+                URI.create("/books/" + id)).body(id);
     }
 
     @PostMapping("/async")
     public ResponseEntity<Map<String, String>> createBookAsync(
-            @RequestBody String title
-    ) {
-        CreateBookCommand command = new CreateBookCommand(context, title);
+            @RequestBody String title) {
+
+        Command<Long> command = () -> {
+            Long id = new CreateBookCommand(context, title).execute();
+
+            context.getBooksRepository()
+                    .findById(id)
+                    .ifPresent(allBooksSubject::add);
+
+            return id;
+        };
+
         String taskId = asyncCommandService.submit(command);
 
-        return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
-                .body(Map.of(
-                        "taskId", taskId,
-                        "status", "ACCEPTED"
-                ));
+        return ResponseEntity.accepted().body(
+                Map.of("taskId", taskId, "status", "ACCEPTED"));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateBook(
             @PathVariable Long id,
-            @RequestBody String title
-    ) {
-        UpdateBookCommand command =
-                new UpdateBookCommand(context, id, title);
+            @RequestBody String title) {
 
-        if (!command.execute()) {
-            return ResponseEntity.notFound().build();
-        }
+        boolean updated =
+                new UpdateBookCommand(context, id, title).execute();
 
-        return ResponseEntity.noContent().build();
+        return updated
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
-        DeleteBookCommand command = new DeleteBookCommand(context, id);
+        boolean deleted =
+                new DeleteBookCommand(context, id).execute();
 
-        if (!command.execute()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.noContent().build();
+        return deleted
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }
