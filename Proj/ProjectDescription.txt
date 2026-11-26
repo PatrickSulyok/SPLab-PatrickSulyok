@@ -1,0 +1,31 @@
+Music Collection & Review Manager
+
+Music Collection & Review Manager este o aplicație web personală destinată organizării unei colecții muzicale, evaluării albumelor și melodiilor și redactării recenziilor personale.
+
+Aplicația gestionează datele printr-o structură arborescentă:
+
+Colecție muzicală → Artist → Album → Ediție → Disc → Melodie
+
+FUNCȚIONALITĂȚI PRINCIPALE
+
+- Adăugarea, vizualizarea, modificarea și ștergerea elementelor din colecția muzicală.
+- Importarea automată a albumelor, listelor de melodii, duratelor și coperților originale, utilizând serviciile gratuite MusicBrainz și Cover Art Archive.
+- Adăugarea manuală și modificarea informațiilor despre albume și melodii.
+- Acordarea a două evaluări independente, una personală și una generală, atât pentru albume, cât și pentru melodii.
+- Redactarea recenziilor personale și păstrarea istoricului impresiilor și modificărilor evaluărilor.
+- Monitorizarea progresului evaluării albumelor și înregistrarea datei primei finalizări.
+- Gestionarea favoritelor, căutarea, sortarea și filtrarea elementelor din colecție.
+- Generarea automată a statisticilor, clasamentelor și graficelor.
+- Exportarea colecției în format CSV, precum și realizarea și restaurarea copiilor de siguranță în format JSON.
+
+TEHNOLOGII UTILIZATE
+
+Aplicația va fi dezvoltată în Java, utilizând Spring Boot pentru implementarea unui API RESTful, Spring Data JPA pentru gestionarea persistenței și H2 ca bază de date.
+
+Interfața web va fi realizată utilizând HTML, CSS și JavaScript, urmărind un design modern, elegant și intuitiv.
+
+Vor fi utilizate șabloane de proiectare precum Composite și Visitor, acolo unde acestea sunt potrivite pentru gestionarea structurii arborescente și generarea statisticilor.
+
+Dezvoltarea proiectului se va realiza incremental, utilizând Git și GitHub, prin crearea unor branch-uri separate pentru implementarea diferitelor funcționalități.
+
+Aplicația va funcționa local, fără autentificare, abonamente sau servicii API plătite.
